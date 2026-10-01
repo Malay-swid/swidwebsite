@@ -1,3 +1,5 @@
+const publicAsset = (path) => `${import.meta.env.BASE_URL}${path}`;
+
 export const CONTENT = {
   hero: {
     title: "The Future is Bright.",
@@ -26,7 +28,7 @@ export const CONTENT = {
       desc: "Guaranteed lowest cost via direct procurement and zero subcontractor margins.",
       benefit: "Maximum ROI",
       icon: "trending-up",
-      img: "/images/l1-cost.svg",
+      img: publicAsset("images/l1-cost.svg"),
       metrics: ["23% Avg. Savings", "Direct EPC Model", "Zero Subcontractors"]
     },
     {
@@ -35,7 +37,7 @@ export const CONTENT = {
       desc: "Uncompromising safety protocols ensuring zero-incident project delivery.",
       benefit: "Risk Mitigation",
       icon: "shield",
-      img: "/images/s1-safety.svg",
+      img: publicAsset("images/s1-safety.svg"),
       metrics: ["0 LTI Record", "ISO 45001 Certified", "Real-time Monitoring"]
     },
     {
@@ -44,7 +46,7 @@ export const CONTENT = {
       desc: "End-to-end quality control from procurement to commissioning.",
       benefit: "Long-term Durability",
       icon: "award",
-      img: "/images/q1-quality.svg",
+      img: publicAsset("images/q1-quality.svg"),
       metrics: ["Tier-1 Components", "100% EL Tested", "25-Year Warranty"]
     },
     {
@@ -53,7 +55,7 @@ export const CONTENT = {
       desc: "Optimized project management for the fastest time-to-energization.",
       benefit: "Quick Payback",
       icon: "zap",
-      img: "/images/t1-speed.svg",
+      img: publicAsset("images/t1-speed.svg"),
       metrics: ["40% Faster", "Parallel Workstreams", "Digital Twins"]
     },
   ],
@@ -102,14 +104,14 @@ export const CONTENT = {
         location: "Shikrapur",
         amount: "₹1,50,000/-",
         desc: "Dedicated to nurturing young learners in a supportive rural environment.",
-        image: "/images/shikrapur.svg"
+        image: publicAsset("images/shikrapur.svg")
       },
       {
         name: "Aniket Sevabhumi Sanstha",
         location: "Uravade",
         amount: "₹1,00,000/-",
         desc: "Supporting residential institutions for differently abled children.",
-        image: "/images/uravade.svg"
+        image: publicAsset("images/uravade.svg")
       }
     ],
     quote: "Precision in every panel, purpose in every watt."

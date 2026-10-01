@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion';
+import { motion, useScroll, useTransform, useSpring, useMotionValueEvent, AnimatePresence, useReducedMotion } from 'framer-motion';
 import {
   Menu, ArrowRight, Zap, Shield, TrendingUp, Globe, X, CheckCircle2, Award, Phone, Mail, MapPin,
   Sun, Moon, Monitor, Battery, Factory, Building2, ExternalLink
@@ -116,12 +116,11 @@ const Navbar = ({ theme, onThemeChange }) => {
     { value: 'system', label: 'System', Icon: Monitor },
   ];
   const navLinks = [
-    { href: '#', label: 'Home' },
-    { href: '#projects', label: 'Projects' },
+    { href: '#home', label: 'Overview' },
+    { href: '#solutions', label: 'Solutions' },
+    { href: '#projects', label: 'Our approach' },
+    { href: '#csr', label: 'Impact' },
     { href: '#investors', label: 'Investors' },
-    { href: '#csr', label: 'CSR' },
-    { href: '#subsidiaries', label: 'Subsidiaries' },
-    { href: '#career', label: 'Career' },
   ];
 
   useEffect(() => {
@@ -132,11 +131,12 @@ const Navbar = ({ theme, onThemeChange }) => {
 
   return (
     <>
-      <nav className={`theme-nav fixed top-0 w-full z-[100] px-6 py-6 transition-all duration-700 flex justify-between items-center ${scrolled ? 'bg-white/70 backdrop-blur-2xl py-4 shadow-sm is-scrolled' : 'bg-transparent'}`}>
-        <div className={`text-2xl font-bold tracking-tighter transition-colors duration-500 ${scrolled ? 'text-charcoal' : 'text-white mix-blend-difference'}`}>
-          SWID
+      <nav className={`theme-nav ${scrolled ? 'theme-nav-scrolled' : ''}`}>
+        <a className="theme-wordmark" href="#home" aria-label="SWID home">SWID<span>.</span></a>
+        <div className="theme-desktop-links">
+          {navLinks.map((link) => <a key={link.href} href={link.href}>{link.label}</a>)}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="theme-nav-actions">
           <div className="appearance-control">
             <button
               className={`appearance-trigger ${scrolled ? 'appearance-trigger-scrolled' : ''}`}
@@ -186,12 +186,17 @@ const Navbar = ({ theme, onThemeChange }) => {
             aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
             aria-expanded={isOpen}
             onClick={() => setIsOpen(!isOpen)}
-            className={`p-2 rounded-full cursor-pointer transition-all duration-500 ${scrolled ? 'bg-gray-100 text-charcoal' : 'bg-white/20 text-white backdrop-blur-md'}`}
+            className="menu-toggle"
           >
             {isOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </nav>
+
+      <div className="theme-announcement">
+        <span>Engineering a cleaner energy future for business.</span>
+        <a href="#solutions">Explore SWID <ArrowRight size={14} /></a>
+      </div>
 
       <AnimatePresence>
         {isOpen && (
@@ -227,69 +232,324 @@ const Navbar = ({ theme, onThemeChange }) => {
 };
 
 const Hero = () => {
-  const { scrollYProgress } = useScroll();
-  const imageY = useTransform(scrollYProgress, [0, 0.2], [0, 70]);
+  const [activeStoryStage, setActiveStoryStage] = useState(0);
+  const storyRef = useRef(null);
+  const prefersReducedMotion = useReducedMotion();
+  const { scrollYProgress } = useScroll({
+    target: storyRef,
+    offset: ['start start', 'end end'],
+  });
+  const storyProgress = useSpring(scrollYProgress, {
+    stiffness: 105,
+    damping: 30,
+    mass: 0.35,
+    restDelta: 0.001,
+  });
+
+  const surveyPhotoOpacity = useTransform(storyProgress, [0, 0.1, 0.19, 0.37, 0.47, 1], [0, 0, 1, 1, 0, 0]);
+  const installPhotoOpacity = useTransform(storyProgress, [0, 0.31, 0.42, 0.57, 0.68, 0.76, 1], [0, 0, 1, 1, 1, 0, 0]);
+  const powerPhotoOpacity = useTransform(storyProgress, [0, 0.6, 0.73, 0.87, 1], [0, 0, 1, 1, 1]);
+  const brandCardOpacity = useTransform(storyProgress, [0, 0.13, 0.28, 0.38, 1], [1, 1, 0.45, 0, 0]);
+  const panelOpacity = useTransform(storyProgress, [0, 0.18, 0.33, 0.49, 0.61, 1], [1, 1, 0.85, 0.45, 0, 0]);
+  const panelTilt = useTransform(storyProgress, [0, 0.23, 0.39, 0.56], [0, 0, 48, 48]);
+  const panelRotation = useTransform(storyProgress, [0, 0.23, 0.39, 0.56], [0, 0, -11, -11]);
+  const panelDrop = useTransform(storyProgress, [0, 0.23, 0.42, 0.58], [0, 0, 52, 52]);
+  const surveyScanOpacity = useTransform(storyProgress, [0, 0.16, 0.24, 0.39, 0.48, 1], [0, 0, 1, 1, 0, 0]);
+  const energyOpacity = useTransform(storyProgress, [0, 0.6, 0.72, 0.86, 1], [0, 0, 1, 1, 1]);
+  const energyLineProgress = useTransform(storyProgress, [0, 0.64, 0.8, 0.92, 1], [0, 0, 1, 1, 1]);
+  const energyLineOffset = useTransform(energyLineProgress, (value) => 1 - value);
+  const brandProgress = useTransform(storyProgress, [0, 0.79, 0.91, 1], [0, 0, 1, 1]);
+  const stageLabels = [
+    '01 / Solar cells',
+    '02 / Site survey',
+    '03 / Rooftop installation',
+    '04 / Powering the facility',
+    'SWID / Energy at work',
+  ];
+  const heroPhotoSource = (source) => source.replace(/([?&]w=)\d+/, (_, prefix) => `${prefix}1200`);
+
+  useMotionValueEvent(storyProgress, 'change', (progress) => {
+    if (prefersReducedMotion) return;
+    const nextStage = progress < 0.16 ? 0 : progress < 0.39 ? 1 : progress < 0.68 ? 2 : progress < 0.83 ? 3 : 4;
+    setActiveStoryStage((currentStage) => currentStage === nextStage ? currentStage : nextStage);
+  });
 
   return (
-    <section id="home" className="photo-contrast relative min-h-[680px] h-screen bg-black overflow-hidden">
-      <motion.img
-        src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=2400&q=90"
-        alt="A field of solar panels producing clean energy"
-        fetchPriority="high"
-        style={{ y: imageY, scale: 1.12 }}
-        className="absolute inset-0 h-full w-full object-cover object-center"
-      />
-      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/10" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/10" />
-      <div className="relative z-10 flex min-h-[680px] h-full items-center px-6 pt-20 md:px-16">
-        <div className="hero-copy-enter max-w-5xl">
-          <p className="mb-6 text-xs font-bold uppercase tracking-[0.24em] text-blue-200">Renewable energy, engineered in India</p>
-          <h1 className="mb-7 text-6xl font-extrabold leading-[0.98] tracking-tight text-white md:text-8xl lg:text-9xl">
-            <span className="text-shimmer-dark">{CONTENT.hero.title}</span>
-          </h1>
-          <p className="max-w-2xl text-lg font-light leading-relaxed text-white/75 md:text-2xl">
-            {CONTENT.hero.subtitle}
-          </p>
-          <a href="#solutions" style={{ color: '#000000' }} className="hero-cta mt-9 inline-flex items-center gap-3 rounded-full bg-white px-7 py-4 text-sm font-bold transition-all duration-500 hover:-translate-y-1 hover:bg-blue-100">
-            Explore our solutions <ArrowRight size={17} />
-          </a>
+    <section id="home" className={`launch-hero${prefersReducedMotion ? ' launch-hero-reduced' : ''}`} ref={storyRef}>
+      <div className="launch-hero-sticky">
+        <div className="launch-copy">
+          <p className="launch-eyebrow">Clean energy, engineered for business</p>
+          <h1>{CONTENT.hero.title}</h1>
+          <p className="launch-description">From site survey to power-on, SWID engineers solar installations for commercial facilities.</p>
+          <a href="#solutions" className="launch-button">Explore our solutions <ArrowRight size={16} /></a>
         </div>
-      </div>
-      <div className="absolute bottom-8 left-6 right-6 flex justify-between text-[10px] uppercase tracking-[0.18em] text-white/65 md:left-16 md:right-16">
-        <span>SWID Renewables</span><span>Powering progress, responsibly</span>
+        <div
+          className="launch-stage"
+          role="img"
+          aria-label="Scroll story: SWID surveys a commercial roof, installs solar panels, and powers the facility"
+        >
+          <div className="launch-stage-frame">
+            <motion.div className="launch-brand-backdrop" style={{ opacity: prefersReducedMotion ? 0 : brandCardOpacity }} />
+            <motion.div className="launch-photo-layer launch-photo-survey" style={{ opacity: prefersReducedMotion ? 0 : surveyPhotoOpacity }}>
+              <img src={heroPhotoSource(CONTENT.solutions[2].image)} alt="" aria-hidden="true" fetchPriority="high" />
+            </motion.div>
+            <motion.div className="launch-photo-layer launch-photo-install" style={{ opacity: prefersReducedMotion ? 0 : installPhotoOpacity }}>
+              <img src={heroPhotoSource(CONTENT.solutions[0].image)} alt="" aria-hidden="true" loading="eager" />
+            </motion.div>
+            <motion.div className="launch-photo-layer launch-photo-powered" style={{ opacity: prefersReducedMotion ? 1 : powerPhotoOpacity }}>
+              <img src={heroPhotoSource(CONTENT.growth.image)} alt="" aria-hidden="true" loading="eager" />
+            </motion.div>
+            <motion.svg className="launch-photo-overlay" viewBox="0 0 390 390" aria-hidden="true" focusable="false">
+              <motion.g style={{ opacity: prefersReducedMotion ? 0 : surveyScanOpacity }} fill="none" stroke="#8ed8ff" strokeWidth="2">
+                <path d="M34 120 187 78l169 48M44 145l142 42 161-49" strokeDasharray="5 5" />
+                <path d="M42 108v19m0-9h18M349 115v20m-9-10h18" />
+                <circle cx="194" cy="136" r="92" strokeDasharray="2 8" />
+              </motion.g>
+              <motion.g style={{ opacity: prefersReducedMotion ? 1 : energyOpacity }} fill="none" stroke="#48b4ff" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                <motion.path
+                  d="M288 194 332 215v61h-70v32h-77"
+                  pathLength="1"
+                  style={{ strokeDasharray: 1, strokeDashoffset: prefersReducedMotion ? 0 : energyLineOffset }}
+                  filter="drop-shadow(0 0 7px rgba(50,163,255,.9))"
+                />
+                <motion.circle cx="185" cy="308" r="7" fill="#d9f1ff" />
+              </motion.g>
+            </motion.svg>
+            <motion.div
+              className="solar-panel-grid"
+              aria-hidden="true"
+              style={{
+                opacity: prefersReducedMotion ? 0 : panelOpacity,
+                rotateX: prefersReducedMotion ? 0 : panelTilt,
+                rotateZ: prefersReducedMotion ? 0 : panelRotation,
+                y: prefersReducedMotion ? 0 : panelDrop,
+              }}
+            >
+              {Array.from({ length: 16 }, (_, index) => {
+                const row = Math.floor(index / 4);
+                const column = index % 4;
+
+                return (
+                  <div
+                    key={index}
+                    className="solar-tile"
+                    style={{
+                      backgroundPosition: `${column * (100 / 3)}% ${row * (100 / 3)}%`,
+                    }}
+                  />
+                );
+              })}
+            </motion.div>
+            <motion.span
+              className={`solar-panel-brand${!prefersReducedMotion && activeStoryStage === 4 ? ' solar-panel-brand-reveal' : ''}`}
+              style={{ opacity: prefersReducedMotion ? 1 : brandProgress }}
+              aria-hidden="true"
+            >SWID</motion.span>
+          </div>
+        </div>
+        <div className="launch-assembly-progress" aria-hidden="true">
+          <motion.span style={{ scaleX: prefersReducedMotion ? 1 : storyProgress }} />
+        </div>
+        <div className="launch-caption">
+          <span>{prefersReducedMotion ? 'SWID / Energy at work' : stageLabels[activeStoryStage]}</span>
+          <span>Commercial solar / Engineered by SWID</span>
+        </div>
       </div>
     </section>
   );
 };
 
 const Growth = () => {
+  const sectionRef = useRef(null);
+  const [activeStep, setActiveStep] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
+
+  const storySteps = [
+    {
+      title: 'Site survey',
+      description: 'We assess your roof, energy use, and site conditions before design begins.',
+      scene: 'Survey markers map the facility roof.',
+    },
+    {
+      title: 'System design',
+      description: 'Our engineers shape a solar layout around your facility and generation needs.',
+      scene: 'A digital panel layout is placed over the roof.',
+    },
+    {
+      title: 'Equipment selection',
+      description: 'Panels, inverters, and system components are selected for the project requirements.',
+      scene: 'Solar equipment arrives at the project site.',
+    },
+    {
+      title: 'Panel installation',
+      description: 'Installation teams build the array with safety and quality controls at each stage.',
+      scene: 'Solar panels are installed across the roof.',
+    },
+    {
+      title: 'Electrical integration',
+      description: 'The solar plant is connected into your facility’s electrical system.',
+      scene: 'Cabling links the solar array with the facility.',
+    },
+    {
+      title: 'Testing and commissioning',
+      description: 'The completed plant is inspected, tested, and commissioned before handover.',
+      scene: 'The installation passes testing and commissioning.',
+    },
+    {
+      title: 'Power generation',
+      description: 'Your commissioned solar plant starts generating power for your business.',
+      scene: 'The facility is powered by its completed solar plant.',
+    },
+  ];
+
+  useEffect(() => {
+    if (prefersReducedMotion) return undefined;
+
+    const updateActiveStep = () => {
+      const section = sectionRef.current;
+      const stickyStage = section?.querySelector('.growth-story-sticky');
+      if (!section || !stickyStage) return;
+
+      const travel = section.offsetHeight - stickyStage.offsetHeight;
+      const progress = travel > 0
+        ? Math.min(1, Math.max(0, -section.getBoundingClientRect().top / travel))
+        : 0;
+      const nextStep = Math.min(storySteps.length - 1, Math.floor(progress * storySteps.length));
+      setActiveStep((currentStep) => currentStep === nextStep ? currentStep : nextStep);
+    };
+
+    updateActiveStep();
+    window.addEventListener('scroll', updateActiveStep, { passive: true });
+    window.addEventListener('resize', updateActiveStep);
+    return () => {
+      window.removeEventListener('scroll', updateActiveStep);
+      window.removeEventListener('resize', updateActiveStep);
+    };
+  }, [prefersReducedMotion, storySteps.length]);
+
+  const displayStep = prefersReducedMotion ? storySteps.length - 1 : activeStep;
+  const completedStep = (step) => displayStep >= step;
+
   return (
-    <section id="growth" className="photo-contrast relative h-screen bg-black flex items-center justify-center overflow-hidden">
-      <motion.div
-        initial={{ scale: 1.1, opacity: 0 }}
-        whileInView={{ scale: 1, opacity: 0.4 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1] }}
-        className="absolute inset-0"
-      >
-        <img
-          src={CONTENT.growth.image}
-          className="w-full h-full object-cover"
-          alt="Solar Farm"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-      </motion.div>
-      <div className="relative z-10 text-center text-white px-4">
-        <FadeInUp>
-          <h2 className="text-6xl md:text-8xl font-bold tracking-tighter leading-tight mb-8">
-            <span className="text-shimmer-dark">{CONTENT.growth.title}</span>
-          </h2>
-        </FadeInUp>
-        <FadeInUp delay={0.2}>
-          <p className="text-gray-400 text-xl md:text-2xl max-w-3xl mx-auto font-light leading-relaxed">
-            {CONTENT.growth.subtitle}
-          </p>
-        </FadeInUp>
+    <section
+      id="growth"
+      className={`growth-story${prefersReducedMotion ? ' growth-story-reduced' : ''}`}
+      ref={sectionRef}
+    >
+      <div className="growth-story-sticky">
+        <div className="growth-story-topline">
+          <span>SWID / SOLAR EPC</span>
+          <span>From rooftop to ready</span>
+        </div>
+
+        <div className="growth-story-layout">
+          <div className="growth-story-copy">
+            <p className="growth-launch-eyebrow">A smarter way to power business</p>
+            <h2>{CONTENT.growth.title}</h2>
+            <p className="growth-launch-description">{CONTENT.growth.subtitle}</p>
+
+            <div className="growth-story-active-step" aria-live="polite">
+              <p className="growth-story-step-count">STEP {String(displayStep + 1).padStart(2, '0')} / 07</p>
+              <h3>{storySteps[displayStep].title}</h3>
+              <p>{storySteps[displayStep].description}</p>
+              {displayStep === storySteps.length - 1 && (
+                <div className="growth-story-cta-wrap">
+                  <a className="growth-launch-primary" href="#contact">Talk to SWID <ArrowRight size={15} /></a>
+                </div>
+              )}
+            </div>
+
+            <ol className="growth-story-step-list" aria-label="Solar installation process">
+              {storySteps.map((step, index) => (
+                <li key={step.title} className={index === displayStep ? 'growth-story-step-current' : ''}>
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                  <span>{step.title}</span>
+                </li>
+              ))}
+            </ol>
+            <a className="growth-story-mobile-cta" href="#contact">Talk to SWID <ArrowRight size={15} /></a>
+          </div>
+
+          <div className={`growth-story-scene growth-story-scene-step-${displayStep}`} role="img" aria-label={storySteps[displayStep].scene}>
+            <div className="growth-story-scene-sky" />
+            <div className="growth-story-sun" />
+            <div className="growth-story-cloud growth-story-cloud-one" />
+            <div className="growth-story-cloud growth-story-cloud-two" />
+            <div className="growth-story-scene-label">SWID / PROJECT DELIVERY</div>
+            <svg className="growth-story-facility" viewBox="0 0 760 470" aria-hidden="true" focusable="false">
+              <defs>
+                <linearGradient id="roof-gradient" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0" stopColor="#26384f" />
+                  <stop offset="1" stopColor="#101824" />
+                </linearGradient>
+                <linearGradient id="building-gradient" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0" stopColor="#263243" />
+                  <stop offset="1" stopColor="#151b25" />
+                </linearGradient>
+              </defs>
+              <path d="M0 374 760 344v126H0z" fill="#111923" />
+              <path d="M98 249 342 187l308 74v148H98z" fill="url(#building-gradient)" stroke="#657187" strokeWidth="2" />
+              <path d="m98 249 244-62 308 74-244 66z" fill="url(#roof-gradient)" stroke="#98a8bf" strokeWidth="2" />
+              <path d="M123 260 342 205l279 67-220 58z" fill="#172b40" opacity=".75" />
+              <path d="M185 284v116m72-135v153m73-171v189m73-171v160m73-141v122m73-103v84" stroke="#66788e" strokeWidth="2" opacity=".45" />
+              <path d="M98 249v148m552-74v148" stroke="#8090a4" strokeWidth="2" opacity=".55" />
+              <path d="M132 322h20v32h-20zm52-13h20v32h-20zm52-13h20v32h-20zm52-13h20v32h-20zm52-13h20v32h-20zm52-13h20v32h-20zm52 13h20v32h-20zm52 13h20v32h-20zm52 13h20v32h-20z" fill="#95abc2" opacity=".68" />
+              <path d="M555 200v-83h43v93" fill="#222e3c" stroke="#71839a" strokeWidth="2" />
+              <path d="M565 135h23m-23 17h23m-23 17h23" stroke="#91a3b9" strokeWidth="2" opacity=".65" />
+              <g className={`growth-story-roof-grid${completedStep(1) ? ' is-visible' : ''}`}>
+                {Array.from({ length: 12 }, (_, index) => {
+                  const row = Math.floor(index / 4);
+                  const column = index % 4;
+                  return (
+                    <polygon
+                      key={index}
+                      points={`${165 + column * 46 + row * 15},${239 + row * 12} ${204 + column * 46 + row * 15},${229 + row * 12} ${247 + column * 46 + row * 15},${239 + row * 12} ${208 + column * 46 + row * 15},${250 + row * 12}`}
+                      fill="#0786ff"
+                      fillOpacity=".58"
+                      stroke="#87c7ff"
+                      strokeWidth="1.5"
+                    />
+                  );
+                })}
+              </g>
+              <g className={`growth-story-wires${completedStep(4) ? ' is-visible' : ''}`} fill="none" stroke="#38bdf8" strokeWidth="3">
+                <path d="m220 283 72 103h212l65-58" />
+                <path d="M505 328h54v51" />
+              </g>
+              <g className={`growth-story-checks${completedStep(5) ? ' is-visible' : ''}`} fill="#83f0c2" stroke="#061a17" strokeWidth="2">
+                <circle cx="210" cy="245" r="15" /><path d="m203 245 5 5 10-11" fill="none" stroke="#061a17" strokeWidth="3" />
+                <circle cx="405" cy="236" r="15" /><path d="m398 236 5 5 10-11" fill="none" stroke="#061a17" strokeWidth="3" />
+                <circle cx="554" cy="282" r="15" /><path d="m547 282 5 5 10-11" fill="none" stroke="#061a17" strokeWidth="3" />
+              </g>
+            </svg>
+            <div className={`growth-story-survey${completedStep(0) ? ' is-visible' : ''}`}><span />SURVEY SCAN</div>
+            <div className={`growth-story-delivery${completedStep(2) ? ' is-visible' : ''}`}>
+              <span className="growth-story-delivery-box">SWID</span>
+              <span className="growth-story-delivery-base" />
+            </div>
+            <div className={`growth-story-power${completedStep(6) ? ' is-visible' : ''}`}>
+              <Zap size={17} fill="currentColor" />
+              <span>GENERATING</span>
+            </div>
+            <div className="growth-story-results" aria-label="SWID project results">
+              {CONTENT.stats.items.slice(0, 3).map((stat) => (
+                <div key={stat.label}>
+                  <strong>{stat.prefix}{stat.value}{stat.suffix}</strong>
+                  <span>{stat.label}</span>
+                </div>
+              ))}
+            </div>
+            <div className="growth-story-scene-caption">{storySteps[displayStep].scene}</div>
+          </div>
+        </div>
+
+        <div className="growth-story-progress" aria-hidden="true">
+          <span style={{ transform: `scaleX(${(displayStep + 1) / storySteps.length})` }} />
+        </div>
+        <div className="growth-story-footer">
+          <span>{prefersReducedMotion ? 'SOLAR EPC / END TO END' : 'SCROLL TO FOLLOW THE BUILD'}</span>
+          <span>{String(displayStep + 1).padStart(2, '0')} — 07</span>
+        </div>
       </div>
     </section>
   );
@@ -321,77 +581,61 @@ const Transition = () => {
     };
   }, []);
 
-  const wipeProgress = Math.min(1, Math.max(0, (progress - 0.28) / 0.4));
-  const solarOffset = `${(1 - wipeProgress) * 100}%`;
-  const traditionalOpacity = 1 - Math.min(1, Math.max(0, (progress - 0.32) / 0.3));
-  const solarOpacity = Math.min(1, Math.max(0, (progress - 0.34) / 0.28));
+  const clampProgress = (value) => Math.min(1, Math.max(0, value));
+  const traditionalOpacity = 1 - clampProgress(progress / 0.43);
+  const solarOpacity = clampProgress((progress - 0.56) / 0.26);
+  const traditionalImageOpacity = 1 - progress;
+  const solarImageOpacity = progress;
 
   return (
-    <section ref={sectionRef} className="photo-contrast relative h-[220vh] bg-black" id="transition">
-      <div className="sticky top-0 h-screen w-full overflow-hidden bg-black text-white">
-        <motion.div
-          className="absolute inset-0"
-          style={{ opacity: traditionalOpacity }}
-        >
+    <section ref={sectionRef} className="photo-contrast transition-story" id="transition">
+      <div className="transition-story-sticky">
+        <div className="transition-story-image" style={{ opacity: traditionalImageOpacity }} aria-hidden="true">
           <img
             src={CONTENT.growth.image}
-            alt="Electricity transmission infrastructure"
-            className="absolute inset-0 h-full w-full object-cover"
+            alt=""
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/65 to-black/25" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
-          <div className="absolute inset-x-6 bottom-24 z-10 mx-auto max-w-6xl md:inset-x-16 md:bottom-28">
-            <p className="mb-5 text-xs font-bold uppercase tracking-[0.22em] text-white/55">01 / The old energy model</p>
-            <h3 className="mb-6 max-w-4xl text-5xl font-bold leading-[1.02] tracking-tight text-white md:text-7xl lg:text-8xl">
-              The Burden of Tradition
-            </h3>
-            <p className="mb-8 max-w-2xl text-base leading-relaxed text-white/70 md:text-xl">
-              {CONTENT.transition.traditional.desc}
-            </p>
-            <div className="grid max-w-3xl grid-cols-1 gap-x-8 gap-y-3 text-sm text-white/65 sm:grid-cols-2 md:text-base">
-              {["Volatile Fuel Costs", "Carbon Compliance Risk", "Grid Dependency", "Maintenance Overhead"].map((item) => (
-                <div key={item} className="flex items-center gap-3">
-                  <span className="h-1.5 w-1.5 rounded-full bg-white/35" />{item}
-                </div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
+          <div />
+        </div>
 
-        <motion.div
-          style={{ transform: `translateX(${solarOffset})`, opacity: solarOpacity, willChange: 'transform, opacity' }}
-          className="absolute inset-0 overflow-hidden"
-        >
+        <div className="transition-story-image" style={{ opacity: solarImageOpacity }} aria-hidden="true">
           <img
             src="https://images.unsplash.com/photo-1509391366360-2e959784a276?auto=format&fit=crop&w=2400&q=90"
-            alt="Solar panels generating clean energy"
-            className="absolute inset-0 h-full w-full object-cover"
+            alt=""
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/45 to-black/15" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-transparent to-black/15" />
-          <div className="absolute inset-x-6 bottom-24 z-10 mx-auto max-w-6xl md:inset-x-16 md:bottom-28">
-            <p className="mb-5 text-xs font-bold uppercase tracking-[0.22em] text-emerald-100/80">02 / The solar advantage</p>
-            <h3 className="mb-6 max-w-4xl text-5xl font-bold leading-[1.02] tracking-tight text-white md:text-7xl lg:text-8xl">
-              The Freedom of Solar
-            </h3>
-            <p className="mb-8 max-w-2xl text-base leading-relaxed text-white/80 md:text-xl">
-              {CONTENT.transition.solar.desc}
-            </p>
-            <div className="grid max-w-3xl grid-cols-1 gap-x-8 gap-y-3 text-sm text-white/85 sm:grid-cols-2 md:text-base">
-              {["Fixed Energy Costs", "Zero Carbon Footprint", "Energy Independence", "Predictable Returns"].map((item) => (
-                <div key={item} className="flex items-center gap-3">
-                  <CheckCircle2 size={17} className="text-emerald-200" />{item}
-                </div>
+          <div />
+        </div>
+
+        <div className="transition-story-content">
+          <div className="transition-scene" style={{ opacity: traditionalOpacity, transform: `translateY(${(1 - traditionalOpacity) * -16}px)` }} aria-hidden={traditionalOpacity < 0.01}>
+            <p className="transition-eyebrow">01 / The old energy model</p>
+            <h3>{CONTENT.transition.traditional.title}</h3>
+            <p className="transition-description">{CONTENT.transition.traditional.desc}</p>
+            <div className="transition-points">
+              {["Volatile Fuel Costs", "Carbon Compliance Risk", "Grid Dependency", "Maintenance Overhead"].map((item) => (
+                <span key={item}><i />{item}</span>
               ))}
             </div>
           </div>
-        </motion.div>
 
-        <div className="absolute left-6 right-6 top-6 z-20 h-px overflow-hidden bg-white/20 md:left-16 md:right-16">
-          <div className="h-full origin-left bg-white" style={{ transform: `scaleX(${progress})` }} />
+          <div className="transition-scene transition-scene-solar" style={{ opacity: solarOpacity, transform: `translateY(${(1 - solarOpacity) * 16}px)` }} aria-hidden={solarOpacity < 0.01}>
+            <p className="transition-eyebrow">02 / The solar advantage</p>
+            <h3>{CONTENT.transition.solar.title}</h3>
+            <p className="transition-description">{CONTENT.transition.solar.desc}</p>
+            <div className="transition-points">
+              {["Fixed Energy Costs", "Zero Carbon Footprint", "Energy Independence", "Predictable Returns"].map((item) => (
+                <span key={item}><CheckCircle2 size={16} />{item}</span>
+              ))}
+            </div>
+            <a href="#solutions" className="transition-cta">Explore solar solutions <ArrowRight size={15} /></a>
+          </div>
         </div>
-        <div className="absolute bottom-7 right-6 z-20 text-[10px] font-medium uppercase tracking-[0.2em] text-white/55 md:right-16">
-          Scroll to compare
+
+        <div className="transition-progress">
+          <div style={{ transform: `scaleX(${progress})` }} />
+        </div>
+        <div className="transition-hint">
+          {progress >= 0.98 ? 'Scroll up to compare' : 'Scroll to compare'}
         </div>
       </div>
     </section>
@@ -557,7 +801,7 @@ const Impact = () => {
         />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 bg-zinc-900 rounded-[3rem] p-12 flex flex-col justify-end relative overflow-hidden group h-[450px]">
-            <img src="/images/csr-main.svg" className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000" alt="Impact" />
+            <img src={`${import.meta.env.BASE_URL}images/csr-main.svg`} className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000" alt="Impact" />
             <div className="relative z-10">
               <span className="text-sm uppercase tracking-widest text-solar-blue font-bold">CSR Contribution</span>
               <h3 className="text-6xl md:text-8xl font-bold mt-2 text-white tracking-tighter">{stats[0].value}</h3>
@@ -701,8 +945,8 @@ const Footer = () => (
     <div className="py-12 px-6 text-center text-xs text-zinc-700 border-t border-zinc-900">
       © {new Date().getFullYear()} SWID Renewables. All rights reserved.
     </div>
-  </footer>
-);
+    </footer>
+  );
 
 const ScrollProgress = () => {
   const { scrollYProgress } = useScroll();
