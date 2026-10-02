@@ -255,26 +255,41 @@ img { display: block; max-width: 100%; }
   .growth-story-step-list li { font-size: 9px; }
 }
 @media (max-width: 760px) {
-  .growth-story { height: auto; overflow: visible; }
-  .growth-story-sticky { position: relative; top: auto; height: auto; min-height: 0; padding: 20px 20px 27px; overflow: visible; }
-  .growth-story-topline { font-size: 8px; }
-  .growth-story-layout { display: flex; flex-direction: column; align-items: stretch; gap: 25px; padding: 28px 0 0; }
-  .growth-story-scene { order: -1; min-height: 240px; aspect-ratio: 1.22; border-radius: 18px; }
+  .growth-story { height: 520svh; overflow: clip; }
+  .growth-story-sticky { position: sticky; top: 54px; height: calc(100svh - 54px); min-height: 0; padding: 14px 18px 20px; overflow: hidden; }
+  .growth-story-topline { flex: 0 0 auto; font-size: 8px; }
+  .growth-story-layout { flex: 1; min-height: 0; display: flex; flex-direction: column; align-items: stretch; gap: 12px; padding: 15px 0 9px; }
+  .growth-story-scene { order: -1; flex: 0 1 38svh; min-height: 190px; max-height: 38svh; aspect-ratio: 1.3; border-radius: 18px; }
   .growth-story-scene-label { top: 14px; left: 15px; font-size: 7px; }
-  .growth-story-scene-caption { right: 12px; bottom: 77px; max-width: 48%; font-size: 8px; }
-  .growth-story-results { right: 10px; bottom: 10px; left: 10px; padding: 10px 5px; }
-  .growth-story-results strong { font-size: 12px; }
-  .growth-story-results span { font-size: 6px; }
-  .growth-story-copy { padding: 0; }
-  .growth-story-copy h2 { font-size: clamp(38px, 11vw, 52px); }
-  .growth-story-copy .growth-launch-description { margin: 13px 0 20px; font-size: 14px; }
-  .growth-story-active-step { display: none; }
-  .growth-story-step-list { grid-template-columns: 1fr; gap: 0; margin-top: 0; }
-  .growth-story-step-list li { min-height: 49px; gap: 13px; border-top: 1px solid rgba(199,216,237,.11); color: #d7dfeb; font-size: 12px; }
-  .growth-story-step-list li > span:first-child { width: 25px; color: #58aaff; font-size: 9px; }
+  .growth-story-scene-caption { right: 10px; bottom: 69px; max-width: 52%; font-size: 7px; }
+  .growth-story-results { right: 9px; bottom: 9px; left: 9px; padding: 9px 4px; }
+  .growth-story-results strong { font-size: 11px; }
+  .growth-story-results span { font-size: 5px; }
+  .growth-story-copy { flex: 1 1 auto; min-height: 0; padding: 0; display: flex; flex-direction: column; }
+  .growth-launch-eyebrow { margin-bottom: 7px; font-size: 8px; }
+  .growth-story-copy h2 { font-size: clamp(29px, 8vw, 40px); }
+  .growth-story-copy .growth-launch-description { margin: 7px 0 10px; font-size: 12px; line-height: 1.4; }
+  .growth-story-active-step { display: block; min-height: 0; }
+  .growth-story-step-count { margin-bottom: 4px; font-size: 8px; }
+  .growth-story-active-step h3 { margin-bottom: 4px; font-size: 19px; }
+  .growth-story-active-step > p:last-of-type { font-size: 11px; line-height: 1.4; }
+  .growth-story-cta-wrap { display: none; }
+  .growth-story-step-list { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; margin-top: 8px; }
+  .growth-story-step-list li { min-height: 20px; justify-content: center; border: 0; color: #687386; }
+  .growth-story-step-list li > span:first-child { color: inherit; font-size: 8px; }
+  .growth-story-step-list li > span:nth-child(2) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
   .growth-story-step-list li.growth-story-step-current { color: #fff; }
-  .growth-story-mobile-cta { width: fit-content; display: inline-flex; margin-top: 21px; }
-  .growth-story-progress, .growth-story-footer { display: none; }
+  .growth-story-mobile-cta { width: fit-content; min-height: 34px; display: inline-flex; margin-top: auto; padding-inline: 15px; font-size: 11px; }
+  .growth-story-progress { flex: 0 0 auto; display: block; margin-top: 0; }
+  .growth-story-footer { flex: 0 0 auto; display: flex; padding-top: 8px; font-size: 7px; }
+}
+
+@media (max-width: 760px) and (max-height: 720px) {
+  .growth-story-sticky { padding-top: 10px; padding-bottom: 13px; }
+  .growth-story-layout { gap: 8px; padding-top: 10px; padding-bottom: 6px; }
+  .growth-story-scene { flex-basis: 33svh; min-height: 160px; max-height: 33svh; }
+  .growth-story-copy .growth-launch-description { display: none; }
+  .growth-story-active-step > p:last-of-type { font-size: 10px; }
 }
 .transition-story { position: relative; height: 220vh; overflow: clip; background: #000; color: #f5f5f7; }
 .transition-story-sticky { position: sticky; top: 52px; width: 100%; height: calc(100svh - 52px); min-height: 600px; overflow: hidden; background: #050506; }
