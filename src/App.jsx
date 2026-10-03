@@ -7,6 +7,8 @@ import {
 import { CONTENT } from './data/content';
 import './apple-effects.css';
 
+const BRAND_LOGO = `${import.meta.env.BASE_URL}images/swid-brand-logo.png`;
+
 // ============================================
 // REUSABLE UI COMPONENTS
 // ============================================
@@ -132,7 +134,9 @@ const Navbar = ({ theme, onThemeChange }) => {
   return (
     <>
       <nav className={`theme-nav ${scrolled ? 'theme-nav-scrolled' : ''}`}>
-        <a className="theme-wordmark" href="#home" aria-label="SWID home">SWID<span>.</span></a>
+        <a className="theme-wordmark" href="#home" aria-label="SWID home">
+          <img src={BRAND_LOGO} alt="SWID Renewables Limited" />
+        </a>
         <div className="theme-desktop-links">
           {navLinks.map((link) => <a key={link.href} href={link.href}>{link.label}</a>)}
         </div>
@@ -899,7 +903,7 @@ const Footer = () => (
     <div className="py-24 px-6 border-b border-zinc-900">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-16">
         <div className="md:col-span-2">
-          <div className="text-4xl font-bold tracking-tighter mb-8">SWID</div>
+          <img className="footer-brand-logo mb-8" src={BRAND_LOGO} alt="SWID Renewables Limited" />
           <p className="text-gray-400 max-w-md mb-12 text-lg font-light leading-relaxed">
             Leading Indian renewable energy EPC partner. We don't just install solar panels; we engineer sustainable futures for India's most ambitious businesses.
           </p>
