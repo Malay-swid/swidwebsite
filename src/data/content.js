@@ -91,6 +91,56 @@ export const CONTENT = {
       image: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1600&q=85"
     },
   ],
+  projectLocations: [
+    {
+      id: "demo-jaipur",
+      name: "DEMO 01 · Jaipur",
+      latitude: 26.9124,
+      longitude: 75.7873,
+      image: "images/solar-farm.jpg.svg",
+      imageAlt: "Illustrative solar farm artwork, not a photograph of this demo location.",
+    },
+    {
+      id: "demo-ahmedabad",
+      name: "DEMO 02 · Ahmedabad",
+      latitude: 23.0225,
+      longitude: 72.5714,
+      image: "images/solar-farm.jpg.svg",
+      imageAlt: "Illustrative solar farm artwork, not a photograph of this demo location.",
+    },
+    {
+      id: "demo-bhopal",
+      name: "DEMO 03 · Bhopal",
+      latitude: 23.2599,
+      longitude: 77.4126,
+      image: "images/solar-farm.jpg.svg",
+      imageAlt: "Illustrative solar farm artwork, not a photograph of this demo location.",
+    },
+    {
+      id: "demo-hyderabad",
+      name: "DEMO 04 · Hyderabad",
+      latitude: 17.385,
+      longitude: 78.4867,
+      image: "images/solar-farm.jpg.svg",
+      imageAlt: "Illustrative solar farm artwork, not a photograph of this demo location.",
+    },
+    {
+      id: "demo-bhubaneswar",
+      name: "DEMO 05 · Bhubaneswar",
+      latitude: 20.2961,
+      longitude: 85.8245,
+      image: "images/solar-farm.jpg.svg",
+      imageAlt: "Illustrative solar farm artwork, not a photograph of this demo location.",
+    },
+    {
+      id: "demo-visakhapatnam",
+      name: "DEMO 06 · Visakhapatnam",
+      latitude: 17.6868,
+      longitude: 83.2185,
+      image: "images/solar-farm.jpg.svg",
+      imageAlt: "Illustrative solar farm artwork, not a photograph of this demo location.",
+    },
+  ],
   impact: {
     title: "Beyond Energy. Building Legacies.",
     stats: [
@@ -104,14 +154,12 @@ export const CONTENT = {
         location: "Shikrapur",
         amount: "₹1,50,000/-",
         desc: "Dedicated to nurturing young learners in a supportive rural environment.",
-        image: publicAsset("images/shikrapur.svg")
       },
       {
         name: "Aniket Sevabhumi Sanstha",
         location: "Uravade",
         amount: "₹1,00,000/-",
         desc: "Supporting residential institutions for differently abled children.",
-        image: publicAsset("images/uravade.svg")
       }
     ],
     quote: "Precision in every panel, purpose in every watt."

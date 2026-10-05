@@ -4,10 +4,15 @@ import {
   Menu, ArrowRight, Zap, Shield, TrendingUp, Globe, X, CheckCircle2, Award, Phone, Mail, MapPin,
   Sun, Moon, Monitor, Battery, Factory, Building2, ExternalLink
 } from 'lucide-react';
+import 'maplibre-gl/dist/maplibre-gl.css';
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { CONTENT } from './data/content';
 import './apple-effects.css';
 
 const BRAND_LOGO = `${import.meta.env.BASE_URL}images/swid-brand-logo.png`;
+const projectMapStyle = (theme) => (
+  `https://tiles.openfreemap.org/styles/${theme === 'dark' ? 'dark' : 'positron'}`
+);
 
 // ============================================
 // REUSABLE UI COMPONENTS
@@ -52,7 +57,7 @@ const StaggerItem = ({ children, className = "" }) => (
 
 const LiquidButton = ({ children, className = "", ...props }) => (
   <motion.button
-    whileHover={{ scale: 1.02, backgroundColor: "rgba(0, 122, 255, 0.9)" }}
+    whileHover={{ scale: 1.02, backgroundColor: "rgba(15, 97, 171, 0.9)" }}
     whileTap={{ scale: 0.98 }}
     className={`relative overflow-hidden transition-all duration-500 rounded-full px-8 py-4 font-bold ${className}`}
     {...props}
@@ -120,6 +125,7 @@ const Navbar = ({ theme, onThemeChange }) => {
   const navLinks = [
     { href: '#home', label: 'Overview' },
     { href: '#solutions', label: 'Solutions' },
+    { href: '#project-locations', label: 'Projects' },
     { href: '#projects', label: 'Our approach' },
     { href: '#csr', label: 'Impact' },
     { href: '#investors', label: 'Investors' },
@@ -243,21 +249,16 @@ const Hero = () => {
     target: storyRef,
     offset: ['start start', 'end end'],
   });
-  const storyProgress = useSpring(scrollYProgress, {
-    stiffness: 105,
-    damping: 30,
-    mass: 0.35,
-    restDelta: 0.001,
-  });
+  const storyProgress = scrollYProgress;
 
-  const surveyPhotoOpacity = useTransform(storyProgress, [0, 0.1, 0.19, 0.37, 0.47, 1], [0, 0, 1, 1, 0, 0]);
-  const installPhotoOpacity = useTransform(storyProgress, [0, 0.31, 0.42, 0.57, 0.68, 0.76, 1], [0, 0, 1, 1, 1, 0, 0]);
-  const powerPhotoOpacity = useTransform(storyProgress, [0, 0.6, 0.73, 0.87, 1], [0, 0, 1, 1, 1]);
-  const brandCardOpacity = useTransform(storyProgress, [0, 0.13, 0.28, 0.38, 1], [1, 1, 0.45, 0, 0]);
-  const panelOpacity = useTransform(storyProgress, [0, 0.18, 0.33, 0.49, 0.61, 1], [1, 1, 0.85, 0.45, 0, 0]);
-  const panelTilt = useTransform(storyProgress, [0, 0.23, 0.39, 0.56], [0, 0, 48, 48]);
-  const panelRotation = useTransform(storyProgress, [0, 0.23, 0.39, 0.56], [0, 0, -11, -11]);
-  const panelDrop = useTransform(storyProgress, [0, 0.23, 0.42, 0.58], [0, 0, 52, 52]);
+  const surveyPhotoOpacity = useTransform(storyProgress, [0, 0.1, 0.19, 0.39, 0.5, 1], [0, 0, 1, 1, 0, 0]);
+  const installPhotoOpacity = useTransform(storyProgress, [0, 0.39, 0.5, 0.6, 0.68, 0.76, 1], [0, 0, 1, 1, 1, 0, 0]);
+  const powerPhotoOpacity = useTransform(storyProgress, [0, 0.6, 0.7, 0.82, 0.87, 1], [0, 0, 0.35, 1, 1, 1]);
+  const brandCardOpacity = useTransform(storyProgress, [0, 0.13, 0.28, 0.38, 0.62, 0.7, 0.82, 1], [1, 1, 0.45, 0, 1, 0.55, 0, 0]);
+  const panelOpacity = useTransform(storyProgress, [0, 0.34, 0.37, 0.38, 1], [1, 1, 0.5, 0, 0]);
+  const panelTilt = useTransform(storyProgress, [0, 0.23, 0.39, 0.535, 0.68, 0.755, 0.9, 1], [0, 0, 12, 10, 0, 0, 0, 0]);
+  const panelRotation = useTransform(storyProgress, [0, 0.23, 0.39, 0.535, 0.68, 0.755, 0.9, 1], [0, 0, -3, -2, 0, 0, 0, 0]);
+  const panelDrop = useTransform(storyProgress, [0, 0.23, 0.39, 0.535, 0.68, 0.755, 0.9, 1], [0, 0, 18, 12, 0, 0, 0, 0]);
   const surveyScanOpacity = useTransform(storyProgress, [0, 0.16, 0.24, 0.39, 0.48, 1], [0, 0, 1, 1, 0, 0]);
   const energyOpacity = useTransform(storyProgress, [0, 0.6, 0.72, 0.86, 1], [0, 0, 1, 1, 1]);
   const energyLineProgress = useTransform(storyProgress, [0, 0.64, 0.8, 0.92, 1], [0, 0, 1, 1, 1]);
@@ -270,7 +271,17 @@ const Hero = () => {
     '04 / Powering the facility',
     'SWID / Energy at work',
   ];
+  const stageScrollPoints = [0.04, 0.27, 0.535, 0.755, 0.94];
   const heroPhotoSource = (source) => source.replace(/([?&]w=)\d+/, (_, prefix) => `${prefix}1200`);
+  const navigateToStoryStage = (index) => {
+    const section = storyRef.current;
+    const stickyStage = section?.querySelector('.launch-hero-sticky');
+    if (!section || !stickyStage) return;
+
+    const travel = section.offsetHeight - window.innerHeight;
+    const top = window.scrollY + section.getBoundingClientRect().top + travel * stageScrollPoints[index];
+    window.scrollTo({ top, behavior: prefersReducedMotion ? 'auto' : 'smooth' });
+  };
 
   useMotionValueEvent(storyProgress, 'change', (progress) => {
     if (prefersReducedMotion) return;
@@ -320,25 +331,23 @@ const Hero = () => {
               </motion.g>
             </motion.svg>
             <motion.div
-              className="solar-panel-grid"
+              className={`solar-panel-grid${activeStoryStage >= 3 ? ' solar-panel-grid-powered' : ''}`}
               aria-hidden="true"
               style={{
-                opacity: prefersReducedMotion ? 0 : panelOpacity,
+                opacity: prefersReducedMotion ? 1 : panelOpacity,
                 rotateX: prefersReducedMotion ? 0 : panelTilt,
                 rotateZ: prefersReducedMotion ? 0 : panelRotation,
                 y: prefersReducedMotion ? 0 : panelDrop,
               }}
             >
-              {Array.from({ length: 16 }, (_, index) => {
-                const row = Math.floor(index / 4);
-                const column = index % 4;
-
+              {Array.from({ length: 36 }, (_, index) => {
                 return (
                   <div
                     key={index}
                     className="solar-tile"
                     style={{
-                      backgroundPosition: `${column * (100 / 3)}% ${row * (100 / 3)}%`,
+                      animationDelay: `${index * 18}ms`,
+                      backgroundImage: `url("${import.meta.env.BASE_URL}images/hero-solar-cell.svg")`,
                     }}
                   />
                 );
@@ -351,6 +360,25 @@ const Hero = () => {
             >SWID</motion.span>
           </div>
         </div>
+        {!prefersReducedMotion && (
+          <nav className="launch-story-controls" aria-label="Solar story stages">
+            <span className="launch-story-prompt">Scroll or choose a stage</span>
+            <div className="launch-story-stops">
+              {stageLabels.map((label, index) => (
+                <button
+                  key={label}
+                  type="button"
+                  aria-label={`Go to stage ${index + 1}: ${label.replace(/^\d+ \/ /, '')}`}
+                  aria-current={activeStoryStage === index ? 'step' : undefined}
+                  className={activeStoryStage === index ? 'launch-story-stop is-active' : 'launch-story-stop'}
+                  onClick={() => navigateToStoryStage(index)}
+                >
+                  <span>{String(index + 1).padStart(2, '0')}</span>
+                </button>
+              ))}
+            </div>
+          </nav>
+        )}
         <div className="launch-assembly-progress" aria-hidden="true">
           <motion.span style={{ scaleX: prefersReducedMotion ? 1 : storyProgress }} />
         </div>
@@ -793,8 +821,250 @@ const Solutions = () => {
   );
 };
 
+const ProjectLocations = ({ theme }) => {
+  const containerRef = useRef(null);
+  const mapRef = useRef(null);
+  const currentTheme = useRef(theme);
+  currentTheme.current = theme;
+  const styleRef = useRef(projectMapStyle(theme));
+  const [shouldLoadMap, setShouldLoadMap] = useState(false);
+  const [mapStatus, setMapStatus] = useState('loading');
+  const locations = CONTENT.projectLocations.filter((project) => (
+    Number.isFinite(project.latitude)
+    && Number.isFinite(project.longitude)
+    && project.latitude >= -90
+    && project.latitude <= 90
+    && project.longitude >= -180
+    && project.longitude <= 180
+  ));
+
+  useEffect(() => {
+    if (!containerRef.current) return undefined;
+    const loadWhenNearViewport = () => {
+      const bounds = containerRef.current?.getBoundingClientRect();
+      if (bounds && bounds.top <= window.innerHeight + 300 && bounds.bottom >= -300) {
+        setShouldLoadMap(true);
+        window.removeEventListener('scroll', loadWhenNearViewport);
+        window.removeEventListener('resize', loadWhenNearViewport);
+      }
+    };
+    loadWhenNearViewport();
+    window.addEventListener('scroll', loadWhenNearViewport, { passive: true });
+    window.addEventListener('resize', loadWhenNearViewport);
+    return () => {
+      window.removeEventListener('scroll', loadWhenNearViewport);
+      window.removeEventListener('resize', loadWhenNearViewport);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!containerRef.current || !shouldLoadMap) return undefined;
+
+    setMapStatus('loading');
+    let map;
+    let popup = null;
+    let selectedProjectId = null;
+    let hoverTimeout;
+    let disposed = false;
+
+    const clearHoverTimeout = () => {
+      window.clearTimeout(hoverTimeout);
+    };
+    const schedulePopupClose = () => {
+      clearHoverTimeout();
+      hoverTimeout = window.setTimeout(() => {
+        if (selectedProjectId === null) {
+          popup?.remove();
+          popup = null;
+        }
+      }, 180);
+    };
+    const closePersistentPopup = () => {
+      selectedProjectId = null;
+      popup?.remove();
+      popup = null;
+    };
+    const handleEscape = (event) => {
+      if (event.key === 'Escape' && selectedProjectId !== null) {
+        closePersistentPopup();
+      }
+    };
+
+    const initializeMap = async () => {
+      try {
+        const maplibregl = await import('maplibre-gl');
+        if (disposed) return;
+
+        maplibregl.setWorkerUrl(maplibreWorkerUrl);
+        const initialStyle = projectMapStyle(currentTheme.current);
+        map = new maplibregl.Map({
+          container: containerRef.current,
+          style: initialStyle,
+          center: [78.9629, 20.5937],
+          zoom: 4,
+        });
+        mapRef.current = map;
+        styleRef.current = initialStyle;
+        map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
+        map.on('load', () => {
+          if (!disposed) setMapStatus('ready');
+        });
+        map.on('error', (event) => {
+          if (!disposed) {
+            console.error('Unable to load the project map.', event.error);
+            setMapStatus('error');
+          }
+        });
+
+        const openPopup = (project, persistent = false) => {
+          if (selectedProjectId !== null && selectedProjectId !== project.id) return;
+          clearHoverTimeout();
+          if (persistent) selectedProjectId = project.id;
+          const previousPopup = popup;
+          popup = null;
+          previousPopup?.remove();
+
+          const content = document.createElement('div');
+          content.className = 'project-location-popup';
+          const image = document.createElement('img');
+          image.src = `${import.meta.env.BASE_URL}${project.image.replace(/^\/+/, '')}`;
+          image.alt = project.imageAlt;
+          image.loading = 'lazy';
+          image.addEventListener('error', () => {
+            const fallback = document.createElement('div');
+            fallback.className = 'project-location-image-fallback';
+            fallback.textContent = 'Project photo unavailable.';
+            image.replaceWith(fallback);
+          }, { once: true });
+          const name = document.createElement('strong');
+          name.textContent = project.name;
+          content.append(image, name);
+
+          const nextPopup = new maplibregl.Popup({
+            closeButton: true,
+            closeOnClick: false,
+            offset: 20,
+            className: 'project-location-popup-shell',
+          })
+            .setLngLat([project.longitude, project.latitude])
+            .setDOMContent(content)
+            .addTo(map);
+          popup = nextPopup;
+          nextPopup.on('close', () => {
+            if (popup === nextPopup) {
+              popup = null;
+              if (selectedProjectId === project.id) selectedProjectId = null;
+            }
+          });
+          const popupElement = nextPopup.getElement();
+          popupElement.addEventListener('mouseenter', clearHoverTimeout);
+          popupElement.addEventListener('mouseleave', schedulePopupClose);
+          popupElement.addEventListener('focusin', clearHoverTimeout);
+          popupElement.addEventListener('focusout', (event) => {
+            if (!popupElement.contains(event.relatedTarget)) schedulePopupClose();
+          });
+        };
+
+        document.addEventListener('keydown', handleEscape);
+
+        if (locations.length > 0) {
+          const bounds = new maplibregl.LngLatBounds();
+          locations.forEach((project) => {
+            bounds.extend([project.longitude, project.latitude]);
+            const marker = document.createElement('button');
+            marker.type = 'button';
+            marker.className = 'project-location-marker';
+            marker.setAttribute('aria-label', `Show project location: ${project.name}`);
+            marker.title = project.name;
+            marker.addEventListener('mouseenter', () => openPopup(project));
+            marker.addEventListener('mouseleave', schedulePopupClose);
+            marker.addEventListener('focus', () => openPopup(project));
+            marker.addEventListener('blur', schedulePopupClose);
+            marker.addEventListener('click', (event) => {
+              event.stopPropagation();
+              openPopup(project, true);
+            });
+
+            new maplibregl.Marker({ element: marker, anchor: 'bottom' })
+              .setLngLat([project.longitude, project.latitude])
+              .addTo(map);
+          });
+          map.fitBounds(bounds, { padding: 72, maxZoom: 8, duration: 900 });
+        }
+      } catch (error) {
+        if (!disposed) {
+          console.error('Unable to initialize the project map.', error);
+          setMapStatus('error');
+        }
+      }
+    };
+
+    initializeMap();
+
+    return () => {
+      disposed = true;
+      clearHoverTimeout();
+      document.removeEventListener('keydown', handleEscape);
+      map?.remove();
+      mapRef.current = null;
+    };
+  }, [shouldLoadMap]);
+
+  useEffect(() => {
+    const nextStyle = projectMapStyle(theme);
+    if (mapRef.current && styleRef.current !== nextStyle) {
+      mapRef.current.setStyle(nextStyle);
+      styleRef.current = nextStyle;
+    }
+  }, [theme]);
+
+  const mapMessage = 'The project map could not load. Check your network connection and try again.';
+
+  return (
+    <section className="py-32 px-6 bg-gray-50" id="project-locations">
+      <div className="max-w-7xl mx-auto">
+        <SectionHeader
+          title="Project Locations"
+          subtitle="Explore six illustrative demo pins across India; these are not actual SWID project sites."
+        />
+        {locations.length > 0 && (
+          <p className="project-location-demo-copy">
+            Demo coordinates are approximate city-center examples, and every pin uses the same illustrative solar artwork.
+          </p>
+        )}
+        {locations.length === 0 && (
+          <p className="project-location-empty-copy">
+            No public project locations have been added yet. Approved projects will appear here when their details are published.
+          </p>
+        )}
+        <div className="project-map-frame">
+          <div
+            ref={containerRef}
+            className="project-map-canvas"
+            role="region"
+            aria-label="Interactive map of illustrative solar project locations"
+          />
+          {mapStatus === 'error' ? (
+            <div className="project-map-message" role="status">
+              <MapPin size={24} aria-hidden="true" />
+              <p>{mapMessage}</p>
+            </div>
+          ) : mapStatus === 'loading' ? (
+            <div className="project-map-message" role="status">Loading project map…</div>
+          ) : null}
+        </div>
+        <p className="project-map-caption">
+          DEMO pins use approximate city-center coordinates and are not actual SWID projects. Map data © OpenStreetMap contributors, via OpenFreeMap.
+        </p>
+      </div>
+    </section>
+  );
+};
+
 const Impact = () => {
   const { title, stats, projects, quote } = CONTENT.impact;
+  const prefersReducedMotion = useReducedMotion();
+  const [impactAmount, impactUnit] = stats[0].value.split(' ');
 
   return (
     <section className="py-32 px-6 bg-white" id="csr">
@@ -804,57 +1074,88 @@ const Impact = () => {
           subtitle="Our responsibility extends beyond the grid. We invest in communities where we operate."
         />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 bg-zinc-900 rounded-[3rem] p-12 flex flex-col justify-end relative overflow-hidden group h-[450px]">
-            <img src={`${import.meta.env.BASE_URL}images/csr-main.svg`} className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-105 transition-transform duration-1000" alt="Impact" />
-            <div className="relative z-10">
-              <span className="text-sm uppercase tracking-widest text-solar-blue font-bold">CSR Contribution</span>
-              <h3 className="text-6xl md:text-8xl font-bold mt-2 text-white tracking-tighter">{stats[0].value}</h3>
+          <motion.div
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 28 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            whileHover={prefersReducedMotion ? undefined : { y: -4 }}
+            className="impact-feature-card md:col-span-2"
+          >
+            <div className="impact-feature-orbit impact-feature-orbit-one" aria-hidden="true" />
+            <div className="impact-feature-orbit impact-feature-orbit-two" aria-hidden="true" />
+            <div className="impact-feature-content">
+              <span className="impact-feature-eyebrow">
+                <span className="impact-feature-live-dot" aria-hidden="true" />
+                Community impact
+              </span>
+              <p className="impact-feature-label">CSR Contribution</p>
+              <h3 className="impact-feature-amount" aria-label={stats[0].value}>
+                <span>{impactAmount}</span>
+                <span className="impact-feature-unit">{impactUnit}</span>
+              </h3>
+              <p className="impact-feature-description">
+                Supporting community initiatives where we operate.
+              </p>
             </div>
-          </div>
+            <span className="impact-feature-index" aria-hidden="true">SWID · IMPACT</span>
+          </motion.div>
 
-          <div className="flex flex-col gap-6">
+          <div className="impact-stats-stack">
             {stats.slice(1).map((s, i) => (
               <motion.div
                 key={i}
-                whileHover={{ scale: 1.02 }}
-                className="bg-zinc-900 rounded-[3rem] p-8 flex flex-col justify-center text-center flex-1 border border-zinc-800 transition-all"
+                initial={prefersReducedMotion ? false : { opacity: 0, x: 20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.25 }}
+                transition={{ duration: 0.6, delay: prefersReducedMotion ? 0 : i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                whileHover={prefersReducedMotion ? undefined : { y: -4 }}
+                className="impact-stat-card"
               >
-                <div className="text-4xl font-bold mb-2 text-white tracking-tight">{s.value}</div>
-                <div className="text-solar-muted text-sm font-medium uppercase tracking-widest">{s.label}</div>
+                <div className="impact-stat-value">{s.value}</div>
+                <div className="impact-stat-label">{s.label}</div>
               </motion.div>
             ))}
           </div>
 
           {projects.map((proj, i) => (
-            <StaggerItem key={i} delay={i * 0.1}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="bg-zinc-900 rounded-[3rem] p-8 flex flex-col justify-between h-96 relative overflow-hidden group border border-zinc-800 transition-all"
-              >
-                <div className="absolute inset-0 opacity-20 group-hover:opacity-40 transition-opacity duration-700">
-                  <img src={proj.image} className="w-full h-full object-cover" alt={proj.name} />
+            <motion.div
+              key={i}
+              initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.6, delay: prefersReducedMotion ? 0 : i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={prefersReducedMotion ? undefined : { y: -5 }}
+              className="impact-recipient-card"
+            >
+              <div className="impact-recipient-art" aria-hidden="true">
+                <span className="impact-recipient-art-ring" />
+                <span className="impact-recipient-art-label">COMMUNITY<br />PARTNERSHIP</span>
+              </div>
+              <div className="impact-recipient-content">
+                <div className="impact-recipient-meta">
+                  <span className="impact-recipient-amount">{proj.amount}</span>
+                  <span className="impact-recipient-location">
+                    <MapPin size={13} aria-hidden="true" />
+                    {proj.location}
+                  </span>
                 </div>
-                <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-6">
-                    <span className="px-4 py-1 bg-solar-blue text-white text-xs font-bold rounded-full">{proj.amount}</span>
-                    <span className="text-xs text-solar-muted uppercase tracking-widest">{proj.location}</span>
-                  </div>
-                  <h4 className="text-2xl font-bold mb-3 text-white tracking-tight">{proj.name}</h4>
-                  <p className="text-solar-muted text-sm leading-relaxed">{proj.desc}</p>
-                </div>
-                <a href="#" className="relative z-10 text-solar-blue text-sm font-bold flex items-center gap-2 hover:underline group">
-                  Read more <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                </a>
-              </motion.div>
-            </StaggerItem>
+                <h4 className="impact-recipient-name">{proj.name}</h4>
+                <p className="impact-recipient-description">{proj.desc}</p>
+              </div>
+            </motion.div>
           ))}
 
-          <div className="md:col-span-3 bg-gradient-to-br from-solar-blue to-blue-700 rounded-[3rem] p-16 flex items-center justify-center text-center relative overflow-hidden h-80 shadow-2xl">
-             <div className="absolute inset-0 bg-white/10 mix-blend-overlay" />
-             <div className="relative z-10 max-w-3xl">
-               <p className="text-3xl md:text-5xl font-medium italic text-white leading-tight tracking-tight">"{quote}"</p>
-             </div>
-          </div>
+          <motion.div
+            initial={prefersReducedMotion ? false : { opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+            className="impact-quote-card md:col-span-3"
+          >
+            <span className="impact-quote-mark" aria-hidden="true">“</span>
+            <p>{quote}</p>
+          </motion.div>
         </div>
       </div>
     </section>
@@ -917,7 +1218,7 @@ const Footer = () => (
           <h5 className="font-bold uppercase tracking-widest text-xs text-solar-blue">Navigation</h5>
           <ul className="space-y-4 text-gray-400 text-sm">
             {['Home', 'Projects', 'Investors', 'CSR', 'Subsidiaries', 'Career'].map(l => (
-              <li key={l}><a href="#" className="hover:text-white transition-colors">{l}</a></li>
+              <li key={l}><a href={l === 'Projects' ? '#project-locations' : '#'} className="hover:text-white transition-colors">{l}</a></li>
             ))}
           </ul>
         </div>
@@ -932,7 +1233,7 @@ const Footer = () => (
       </div>
     </div>
     <div className="relative h-screen flex flex-col items-center justify-center px-6 overflow-hidden">
-      <div className="absolute bottom-0 w-full h-1 bg-gradient-to-r from-transparent via-solar-blue to-transparent shadow-[0_0_20px_#007AFF]" />
+      <div className="absolute bottom-0 w-full h-1 bg-gradient-to-r from-transparent via-solar-blue to-transparent shadow-[0_0_20px_#0f61ab]" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -941,7 +1242,7 @@ const Footer = () => (
         <h2 className="text-6xl md:text-9xl font-bold tracking-tighter mb-16 leading-tight">
           <span className="text-shimmer-dark">{CONTENT.footer.ctaTitle}</span>
         </h2>
-        <LiquidButton className="bg-solar-blue text-white px-16 py-6 text-2xl font-bold flex items-center gap-4 mx-auto hover:shadow-[0_0_50px_rgba(0,122,255,0.4)]">
+        <LiquidButton className="bg-solar-blue text-white px-16 py-6 text-2xl font-bold flex items-center gap-4 mx-auto hover:shadow-[0_0_50px_rgba(15,97,171,0.4)]">
           {CONTENT.footer.ctaButton} <ArrowRight size={28} />
         </LiquidButton>
       </motion.div>
@@ -1010,6 +1311,7 @@ export default function App() {
       <StatsCounter />
       <Ecosystem />
       <Solutions />
+      <ProjectLocations theme={activeTheme} />
       <Impact />
       <InvestorsSection />
       <Footer />

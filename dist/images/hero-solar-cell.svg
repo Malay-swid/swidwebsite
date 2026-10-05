@@ -1,36 +1,23 @@
-<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <linearGradient id="cellGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#1e40af"/>
-      <stop offset="50%" style="stop-color:#3b82f6"/>
-      <stop offset="100%" style="stop-color:#1e3a8a"/>
+    <linearGradient id="cellGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0751ae"/>
+      <stop offset=".52" stop-color="#0877df"/>
+      <stop offset="1" stop-color="#063579"/>
     </linearGradient>
-    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0"/>
-      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0.3"/>
-      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0"/>
+    <linearGradient id="shine" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fff" stop-opacity=".24"/>
+      <stop offset=".42" stop-color="#fff" stop-opacity=".02"/>
+      <stop offset="1" stop-color="#001d55" stop-opacity=".28"/>
     </linearGradient>
+    <pattern id="cellLines" width="10" height="10" patternUnits="userSpaceOnUse">
+      <path d="M.5 0v10" fill="none" stroke="#c5e4ff" stroke-opacity=".24"/>
+      <path d="M0 9.5h10" fill="none" stroke="#c5e4ff" stroke-opacity=".12"/>
+      <circle cx="5" cy="5" r=".7" fill="#fff" fill-opacity=".65"/>
+    </pattern>
   </defs>
-  <rect width="512" height="512" rx="48" fill="url(#cellGrad)"/>
-  <!-- Grid lines -->
-  <g stroke="#1e3a8a" stroke-width="1" opacity="0.4">
-    <line x1="64" y1="64" x2="448" y2="64"/>
-    <line x1="64" y1="160" x2="448" y2="160"/>
-    <line x1="64" y1="256" x2="448" y2="256"/>
-    <line x1="64" y1="352" x2="448" y2="352"/>
-    <line x1="64" y1="448" x2="448" y2="448"/>
-    <line x1="64" y1="64" x2="64" y2="448"/>
-    <line x1="160" y1="64" x2="160" y2="448"/>
-    <line x1="256" y1="64" x2="256" y2="448"/>
-    <line x1="352" y1="64" x2="352" y2="448"/>
-    <line x1="448" y1="64" x2="448" y2="448"/>
-  </g>
-  <!-- Busbars -->
-  <rect x="64" y="40" width="384" height="8" rx="4" fill="#1e3a8a" opacity="0.6"/>
-  <rect x="64" y="464" width="384" height="8" rx="4" fill="#1e3a8a" opacity="0.6"/>
-  <!-- Shine overlay -->
-  <rect width="512" height="512" rx="48" fill="url(#shine)" style="animation: shine 3s ease-in-out infinite;"/>
-  <style>
-    @keyframes shine { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
-  </style>
+  <rect x=".5" y=".5" width="127" height="127" rx="8" fill="url(#cellGrad)" stroke="#b7d7ff" stroke-opacity=".9"/>
+  <rect x="4" y="4" width="120" height="120" rx="5" fill="url(#cellLines)"/>
+  <path d="M5 33h118M5 95h118" fill="none" stroke="#d4ebff" stroke-opacity=".42" stroke-width="1.2"/>
+  <rect x="4" y="4" width="120" height="120" rx="5" fill="url(#shine)"/>
 </svg>

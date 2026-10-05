@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        'solar-blue': '#007AFF',
+        'solar-blue': '#0f61ab',
         'charcoal': '#1A1A1A',
         'solar-white': '#FFFFFF',
         'solar-muted': '#86868B',
